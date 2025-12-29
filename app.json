@@ -1,0 +1,40 @@
+{
+  "expo": {
+    "name": "Quench",
+    "slug": "quench",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#52796f"
+    },
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "com.quench.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#52796f"
+      },
+      "package": "com.quench.app"
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "color": "#52796f"
+        }
+      ],
+      "expo-asset",
+      "expo-font"
+    ]
+  }
+}
