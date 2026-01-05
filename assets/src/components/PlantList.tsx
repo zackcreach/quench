@@ -18,7 +18,10 @@ interface PlantListProps {
 }
 
 export function PlantList({ plants, onWater, onEdit, onDelete, onReorder }: PlantListProps) {
-  const { dragState, handlers } = useWebDragAndDrop({ onReorder });
+  const { dragState, handlers, touchHandlers, registerCardRef } = useWebDragAndDrop({
+    onReorder,
+    itemCount: plants.length,
+  });
 
   if (plants.length === 0) {
     return <EmptyState />;
@@ -42,6 +45,10 @@ export function PlantList({ plants, onWater, onEdit, onDelete, onReorder }: Plan
             onDragOver={handlers.handleDragOver(index)}
             onDragLeave={handlers.handleDragLeave}
             onDrop={handlers.handleDrop(index)}
+            onTouchStart={touchHandlers.handleTouchStart(index)}
+            onTouchMove={touchHandlers.handleTouchMove}
+            onTouchEnd={touchHandlers.handleTouchEnd}
+            registerRef={(element) => registerCardRef(index, element)}
           />
         ))}
       </ScrollView>
