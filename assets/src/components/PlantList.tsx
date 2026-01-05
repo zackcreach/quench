@@ -5,7 +5,9 @@ import DraggableFlatList, {
 } from 'react-native-draggable-flatlist';
 import type { Plant } from '../types/plant';
 import { PlantCard } from './PlantCard';
+import { WebDraggablePlantCard } from './WebDraggablePlantCard';
 import { EmptyState } from './EmptyState';
+import { useWebDragAndDrop } from '../hooks/useWebDragAndDrop';
 
 interface PlantListProps {
   plants: Plant[];
@@ -16,6 +18,8 @@ interface PlantListProps {
 }
 
 export function PlantList({ plants, onWater, onEdit, onDelete, onReorder }: PlantListProps) {
+  const { dragState, handlers } = useWebDragAndDrop({ onReorder });
+
   if (plants.length === 0) {
     return <EmptyState />;
   }
@@ -23,13 +27,21 @@ export function PlantList({ plants, onWater, onEdit, onDelete, onReorder }: Plan
   if (Platform.OS === 'web') {
     return (
       <ScrollView contentContainerStyle={styles.list}>
-        {plants.map((plant) => (
-          <PlantCard
+        {plants.map((plant, index) => (
+          <WebDraggablePlantCard
             key={`${plant.id}-${plant.lastWatered}`}
             plant={plant}
+            index={index}
             onWater={onWater}
             onEdit={onEdit}
             onDelete={onDelete}
+            isDragging={dragState.dragIndex === index}
+            isDropTarget={dragState.dropIndex === index && dragState.dragIndex !== index}
+            onDragStart={handlers.handleDragStart(index)}
+            onDragEnd={handlers.handleDragEnd}
+            onDragOver={handlers.handleDragOver(index)}
+            onDragLeave={handlers.handleDragLeave}
+            onDrop={handlers.handleDrop(index)}
           />
         ))}
       </ScrollView>
