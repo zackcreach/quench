@@ -1,13 +1,12 @@
-import { StyleSheet, Platform, ScrollView } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import DraggableFlatList, {
   RenderItemParams,
   ScaleDecorator,
 } from 'react-native-draggable-flatlist';
 import type { Plant } from '../types/plant';
 import { PlantCard } from './PlantCard';
-import { WebDraggablePlantCard } from './WebDraggablePlantCard';
+import { WebSortablePlantList } from './WebSortablePlantList';
 import { EmptyState } from './EmptyState';
-import { useWebDragAndDrop } from '../hooks/useWebDragAndDrop';
 
 interface PlantListProps {
   plants: Plant[];
@@ -18,40 +17,19 @@ interface PlantListProps {
 }
 
 export function PlantList({ plants, onWater, onEdit, onDelete, onReorder }: PlantListProps) {
-  const { dragState, handlers, touchHandlers, registerCardRef } = useWebDragAndDrop({
-    onReorder,
-    itemCount: plants.length,
-  });
-
   if (plants.length === 0) {
     return <EmptyState />;
   }
 
   if (Platform.OS === 'web') {
     return (
-      <ScrollView contentContainerStyle={styles.list}>
-        {plants.map((plant, index) => (
-          <WebDraggablePlantCard
-            key={`${plant.id}-${plant.lastWatered}`}
-            plant={plant}
-            index={index}
-            onWater={onWater}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            isDragging={dragState.dragIndex === index}
-            isDropTarget={dragState.dropIndex === index && dragState.dragIndex !== index}
-            onDragStart={handlers.handleDragStart(index)}
-            onDragEnd={handlers.handleDragEnd}
-            onDragOver={handlers.handleDragOver(index)}
-            onDragLeave={handlers.handleDragLeave}
-            onDrop={handlers.handleDrop(index)}
-            onTouchStart={touchHandlers.handleTouchStart(index)}
-            onTouchMove={touchHandlers.handleTouchMove}
-            onTouchEnd={touchHandlers.handleTouchEnd}
-            registerRef={(element) => registerCardRef(index, element)}
-          />
-        ))}
-      </ScrollView>
+      <WebSortablePlantList
+        plants={plants}
+        onWater={onWater}
+        onEdit={onEdit}
+        onDelete={onDelete}
+        onReorder={onReorder}
+      />
     );
   }
 

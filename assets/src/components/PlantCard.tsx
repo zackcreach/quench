@@ -1,4 +1,4 @@
-import { View, StyleSheet, Platform } from 'react-native';
+import { View, StyleSheet } from 'react-native';
 import { Card, Text, Button, IconButton, Icon } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Plant } from '../types/plant';
@@ -34,10 +34,7 @@ export function PlantCard({
             icon="drag"
             size={20}
             onPressIn={drag}
-            style={[
-              styles.dragHandle,
-              Platform.OS === 'web' && { cursor: 'grab' as unknown as undefined },
-            ]}
+            style={styles.dragHandle}
             accessibilityLabel="Drag to reorder"
           />
           <View style={styles.plantInfo}>
