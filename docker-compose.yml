@@ -1,0 +1,53 @@
+services:
+  quench:
+    build: .
+    image: quench:latest
+    container_name: quench
+    ports:
+      - "4001:4001"
+    environment:
+      - PHX_SERVER=true
+      - PHX_HOST=symphony
+      - PORT=4001
+      - POOL_SIZE=10
+      - MIX_ENV=prod
+      - DATABASE_URL=ecto://postgres:postgres@db:5432/quench_prod
+      - SECRET_KEY_BASE=${SECRET_KEY_BASE}
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - quench_network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:4001/api/plants || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  db:
+    image: postgres:16-alpine
+    container_name: quench_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=quench_prod
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - quench_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  quench_network:
+    driver: bridge

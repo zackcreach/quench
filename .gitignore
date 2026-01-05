@@ -1,32 +1,37 @@
-# Dependencies
-node_modules/
+# Phoenix/Elixir
+/_build/
+/deps/
+/cover/
+/doc/
+/.fetch
+/tmp/
+erl_crash.dump
+*.ez
+quench-*.tar
 
-# Expo
-.expo/
-dist/
-web-build/
+# Database backups
+/creachignore/
 
-# Native builds
-*.orig.*
+# Expo/React Native (in assets/)
+assets/node_modules/
+assets/.expo/
+assets/dist/
+assets/web-build/
+assets/ios/
+assets/android/
+assets/.metro-health-check*
+assets/npm-debug.*
+assets/yarn-debug.*
+assets/yarn-error.*
+assets/*.tsbuildinfo
+
+# Native build artifacts
 *.jks
 *.p8
 *.p12
 *.key
 *.mobileprovision
 *.orig.*
-android/
-ios/
-
-# Metro
-.metro-health-check*
-
-# Debug
-npm-debug.*
-yarn-debug.*
-yarn-error.*
-
-# macOS
-.DS_Store
 
 # Environment
 .env
@@ -37,14 +42,11 @@ yarn-error.*
 .vscode/
 .idea/
 
-# Testing
-coverage/
-
-# TypeScript
-*.tsbuildinfo
-
-# Playwright MCP screenshots
-.playwright-mcp/
+# macOS
+.DS_Store
 
 # Logs
 *.log
+
+# Playwright MCP screenshots
+.playwright-mcp/
