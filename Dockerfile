@@ -1,3 +1,10 @@
+# Global ARGs for multi-stage build
+ARG ELIXIR_VERSION=1.17.3
+ARG OTP_VERSION=27.1.2
+ARG DEBIAN_VERSION=bullseye-20241111-slim
+ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
+ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
+
 # Stage 1: Build the React Native/Expo web export
 FROM node:20-slim AS frontend_builder
 
@@ -16,13 +23,6 @@ COPY assets/images ./images
 RUN npx expo export --platform web --output-dir dist
 
 # Stage 2: Build the Elixir release
-ARG ELIXIR_VERSION=1.17.3
-ARG OTP_VERSION=27.1.2
-ARG DEBIAN_VERSION=bullseye-20241111-slim
-
-ARG BUILDER_IMAGE="hexpm/elixir:${ELIXIR_VERSION}-erlang-${OTP_VERSION}-debian-${DEBIAN_VERSION}"
-ARG RUNNER_IMAGE="debian:${DEBIAN_VERSION}"
-
 FROM ${BUILDER_IMAGE} AS builder
 
 RUN apt-get update -y && apt-get install -y build-essential git \
