@@ -43,17 +43,20 @@ function SortablePlantCard({ plant, onWater, onEdit, onDelete }: SortablePlantCa
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.5 : 1,
-    touchAction: 'none',
   };
 
+  // Combine attributes and listeners for the drag handle only
+  const dragHandleProps = { ...attributes, ...listeners };
+
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div ref={setNodeRef} style={style}>
       <PlantCard
         plant={plant}
         onWater={onWater}
         onEdit={onEdit}
         onDelete={onDelete}
         isActive={isDragging}
+        dragHandleProps={dragHandleProps}
       />
     </div>
   );
