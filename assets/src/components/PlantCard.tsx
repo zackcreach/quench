@@ -12,6 +12,8 @@ interface PlantCardProps {
   onDelete: (plant: Plant) => void;
   drag?: () => void;
   isActive?: boolean;
+  // Web drag handle props from dnd-kit
+  dragHandleProps?: Record<string, unknown>;
 }
 
 export function PlantCard({
@@ -21,6 +23,7 @@ export function PlantCard({
   onDelete,
   drag,
   isActive,
+  dragHandleProps,
 }: PlantCardProps) {
   const status = getPlantStatus(plant);
   const colors = statusColors[status.type];
@@ -30,13 +33,15 @@ export function PlantCard({
     <Card style={[styles.card, isActive && styles.cardDragging]} mode="outlined">
       <Card.Content style={styles.content}>
         <View style={styles.header}>
-          <IconButton
-            icon="drag"
-            size={20}
-            onPressIn={drag}
-            style={styles.dragHandle}
-            accessibilityLabel="Drag to reorder"
-          />
+          <View {...dragHandleProps} style={styles.dragHandleWrapper}>
+            <IconButton
+              icon="drag"
+              size={20}
+              onPressIn={drag}
+              style={styles.dragHandle}
+              accessibilityLabel="Drag to reorder"
+            />
+          </View>
           <View style={styles.plantInfo}>
             <Text style={styles.plantName}>
               {plant.name}
@@ -127,6 +132,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 16,
+  },
+  dragHandleWrapper: {
+    cursor: 'grab',
+    touchAction: 'none',
   },
   dragHandle: {
     marginLeft: -8,
