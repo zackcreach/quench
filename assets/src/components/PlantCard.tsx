@@ -194,6 +194,7 @@ const styles = StyleSheet.create({
     borderRadius: buttonStyles.borderRadius,
     borderColor: '#BCD3CB',
     borderWidth: 1.5,
+    marginLeft: 0,
   },
   waterButtonContent: {
     paddingVertical: 4,
