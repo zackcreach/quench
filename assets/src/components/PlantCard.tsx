@@ -27,7 +27,7 @@ export function PlantCard({
   const intervalLabel = plant.intervalDays === 1 ? 'day' : 'days';
 
   return (
-    <Card style={[styles.card, isActive && styles.cardDragging]} mode="outlined">
+    <Card style={[styles.card, isActive && styles.cardDragging]}>
       <Card.Content style={styles.content}>
         <View style={styles.header}>
           <IconButton
@@ -107,7 +107,7 @@ const styles = StyleSheet.create({
   card: {
     marginHorizontal: 16,
     marginVertical: 8,
-    borderRadius: 12,
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#DEE9E5',
     elevation: 2,
