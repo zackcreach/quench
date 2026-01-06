@@ -121,7 +121,7 @@ export function WebSortablePlantList({
       onDragEnd={handleDragEnd}
     >
       <SortableContext items={plants.map((p) => p.id)} strategy={verticalListSortingStrategy}>
-        <div style={{ paddingTop: 8, paddingBottom: 8 }}>
+        <div style={{ flex: 1, overflowY: 'auto', paddingTop: 8, paddingBottom: 8 }}>
           {plants.map((plant) => (
             <SortablePlantCard
               key={plant.id}
