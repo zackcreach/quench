@@ -132,8 +132,7 @@ use Quench.Schema, prefix: "plant"
 
 2. Create env file:
    ```bash
-   sudo mkdir -p /etc/quench
-   sudo nano /etc/quench/env
+   nano /home/zack/dev/quench/.env
    ```
 
 3. Rebuild and start:

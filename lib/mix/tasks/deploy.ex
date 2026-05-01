@@ -15,6 +15,7 @@ defmodule Mix.Tasks.Deploy do
 
     File.cd!(@repo_dir)
 
+    load_dotenv()
     configure_git_credentials()
 
     log("Fetching from origin...")
@@ -32,7 +33,10 @@ defmodule Mix.Tasks.Deploy do
     if force and local_commit == remote_commit do
       log("Force deploying current commit: #{String.slice(local_commit, 0..6)}")
     else
-      log("New commits detected (#{String.slice(local_commit, 0..6)} -> #{String.slice(remote_commit, 0..6)})")
+      log(
+        "New commits detected (#{String.slice(local_commit, 0..6)} -> #{String.slice(remote_commit, 0..6)})"
+      )
+
       log("Pulling latest changes...")
       git!(["pull", "origin", "main"])
     end
@@ -74,8 +78,64 @@ defmodule Mix.Tasks.Deploy do
         File.chmod!(helper_path, 0o755)
 
         System.cmd("git", ["config", "credential.helper", ""], stderr_to_stdout: true)
-        System.cmd("git", ["config", "--local", "credential.helper", "!#{helper_path}"], stderr_to_stdout: true)
+
+        System.cmd("git", ["config", "--local", "credential.helper", "!#{helper_path}"],
+          stderr_to_stdout: true
+        )
     end
+  end
+
+  defp load_dotenv do
+    ".env"
+    |> File.read()
+    |> case do
+      {:ok, contents} ->
+        contents
+        |> String.split("\n")
+        |> Enum.each(&put_dotenv_line/1)
+
+      {:error, :enoent} ->
+        log("Warning: .env not found, relying on process environment")
+
+      {:error, reason} ->
+        error("Failed to read .env: #{inspect(reason)}")
+    end
+  end
+
+  defp put_dotenv_line(line) do
+    line = String.trim(line)
+
+    cond do
+      line == "" ->
+        :ok
+
+      String.starts_with?(line, "#") ->
+        :ok
+
+      true ->
+        put_dotenv_assignment(line)
+    end
+  end
+
+  defp put_dotenv_assignment("export " <> assignment), do: put_dotenv_assignment(assignment)
+
+  defp put_dotenv_assignment(assignment) do
+    case String.split(assignment, "=", parts: 2) do
+      [key, value] when key != "" ->
+        System.put_env(key, trim_dotenv_value(value))
+
+      _invalid ->
+        :ok
+    end
+  end
+
+  defp trim_dotenv_value(value) do
+    value
+    |> String.trim()
+    |> String.trim_leading("\"")
+    |> String.trim_trailing("\"")
+    |> String.trim_leading("'")
+    |> String.trim_trailing("'")
   end
 
   defp git!(args) do
