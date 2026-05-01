@@ -22,10 +22,9 @@ export function formatTimeRemaining(milliseconds: number): string {
   return 'Less than 1 hour';
 }
 
-export function getPlantStatus(plant: Plant): PlantStatusInfo {
-  const now = Date.now();
+export function getPlantStatus(plant: Plant, currentTime = Date.now()): PlantStatusInfo {
   const nextWateringTime = plant.lastWatered + plant.intervalDays * MILLISECONDS_PER_DAY;
-  const timeUntilWatering = nextWateringTime - now;
+  const timeUntilWatering = nextWateringTime - currentTime;
 
   if (timeUntilWatering < 0) {
     const overdueTime = Math.abs(timeUntilWatering);

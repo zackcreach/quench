@@ -1,9 +1,12 @@
+import { useEffect, useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Card, Text, Button, IconButton, Icon } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
 import type { Plant } from '../types/plant';
 import { getPlantStatus } from '../utils/plantStatus';
 import { statusColors, buttonStyles, fonts } from '../theme/theme';
+
+const COUNTDOWN_TICK_INTERVAL = 1000 * 60;
 
 interface PlantCardProps {
   plant: Plant;
@@ -25,15 +28,26 @@ export function PlantCard({
   isActive,
   dragHandleProps,
 }: PlantCardProps) {
-  const status = getPlantStatus(plant);
+  const [currentTime, setCurrentTime] = useState(() => Date.now());
+  const status = getPlantStatus(plant, currentTime);
   const colors = statusColors[status.type];
   const intervalLabel = plant.intervalDays === 1 ? 'day' : 'days';
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, COUNTDOWN_TICK_INTERVAL);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
   return (
     <Card style={[styles.card, isActive && styles.cardDragging]}>
       <Card.Content style={styles.content}>
         <View style={styles.header}>
-          <View {...dragHandleProps} style={styles.dragHandleWrapper}>
+          <View {...dragHandleProps}>
             <IconButton
               icon="drag"
               size={20}
@@ -132,10 +146,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-start',
     marginBottom: 16,
-  },
-  dragHandleWrapper: {
-    cursor: 'grab',
-    touchAction: 'none',
   },
   dragHandle: {
     marginLeft: -8,

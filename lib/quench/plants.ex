@@ -16,7 +16,7 @@ defmodule Quench.Plants do
 
   def create_plant(attrs \\ %{}) do
     %Plant{}
-    |> Plant.changeset(attrs)
+    |> Plant.changeset(put_initial_last_watered_at(attrs))
     |> Repo.insert()
   end
 
@@ -34,5 +34,33 @@ defmodule Quench.Plants do
     plant
     |> Plant.changeset(%{last_watered_at: DateTime.utc_now()})
     |> Repo.update()
+  end
+
+  defp put_initial_last_watered_at(%{"last_watered_at" => nil} = attrs) do
+    %{attrs | "last_watered_at" => DateTime.utc_now()}
+  end
+
+  defp put_initial_last_watered_at(%{"last_watered_at" => _last_watered_at} = attrs) do
+    attrs
+  end
+
+  defp put_initial_last_watered_at(%{last_watered_at: nil} = attrs) do
+    %{attrs | last_watered_at: DateTime.utc_now()}
+  end
+
+  defp put_initial_last_watered_at(%{last_watered_at: _last_watered_at} = attrs) do
+    attrs
+  end
+
+  defp put_initial_last_watered_at(attrs) do
+    put_initial_last_watered_at(attrs, Map.keys(attrs))
+  end
+
+  defp put_initial_last_watered_at(attrs, [key | _keys]) when is_binary(key) do
+    Map.put(attrs, "last_watered_at", DateTime.utc_now())
+  end
+
+  defp put_initial_last_watered_at(attrs, _keys) do
+    Map.put(attrs, :last_watered_at, DateTime.utc_now())
   end
 end
