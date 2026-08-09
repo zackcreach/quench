@@ -8,9 +8,14 @@ Plant watering tracker with Phoenix API backend and React Native/Expo frontend.
 
 **Backend (Phoenix):**
 ```bash
-mix setup          # Install deps, create DB, run migrations
-mix phx.server     # Start at http://localhost:4000
+nix develop
+mix setup
+iex -S mix phx.server
 ```
+
+The Nix development shell provides the pinned Erlang, Elixir, Node, and PostgreSQL client tooling on Linux and Darwin. A PostgreSQL server must be running locally.
+
+Without Nix, use [`flake.nix`](flake.nix) as the source of truth for tool versions and install matching Erlang, Elixir, Node, and PostgreSQL tooling with mise, asdf, or equivalent tooling before running `mix setup`.
 
 **Frontend (Expo):**
 ```bash
@@ -21,9 +26,7 @@ npm run web        # Start at http://localhost:8081
 
 ### Production
 
-```bash
-docker compose up -d
-```
+Quench is built as a Nix Mix release and managed by `quench-native.service` on Symphony.
 
 ## Architecture
 
@@ -40,7 +43,7 @@ docker compose up -d
           ▼
 ┌─────────────────────┐
 │    PostgreSQL       │
-│    (Docker)         │
+│  (NixOS service)    │
 └─────────────────────┘
 ```
 
@@ -79,8 +82,7 @@ quench/
 │       ├── services/
 │       │   └── api.ts      # API client
 │       └── screens/
-├── Dockerfile
-└── docker-compose.yml
+└── flake.nix               # Native release package
 ```
 
 ## Commands
@@ -98,9 +100,8 @@ npm run ios                   # iOS simulator
 npm run android               # Android emulator
 npm run web                   # Web browser
 
-# Deployment
-mix deploy                    # Auto-deploy if new commits
-mix deploy --force            # Force deploy
+# Production release
+nix build                     # Build the immutable release
 ```
 
 ## Configuration
@@ -125,21 +126,17 @@ use Quench.Schema, prefix: "plant"
 
 ## Deployment (NixOS/Symphony)
 
-1. Add services to NixOS config:
-   - `quench.nix` - Docker Compose service
-   - `quench-deploy.nix` - Auto-deploy timer
-   - `quench-backup.nix` - Database backup timer
+Push the application commit, then deploy its pinned input from `/etc/nixos`:
 
-2. Create env file:
-   ```bash
-   nano /home/zack/dev/quench/.env
-   ```
+```bash
+nix flake update quench
+nix build .#nixosConfigurations.symphony.config.system.build.toplevel
+sudo nixos-rebuild switch --flake .#symphony
+systemctl status quench-native
+curl --fail https://quench.prominent.tools/api/plants
+```
 
-3. Rebuild and start:
-   ```bash
-   sudo nixos-rebuild switch --flake .#symphony
-   sudo systemctl start quench
-   ```
+Migrations run through `quench-native-migrate.service`. PostgreSQL 18.4 is managed by NixOS and backed up to Biltmore by `postgresqlBackup-quench_prod.timer`.
 
 ## License
 
