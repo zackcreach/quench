@@ -16,6 +16,12 @@ defmodule QuenchWeb.Router do
     post "/plants/:id/water", PlantController, :water
   end
 
+  scope "/", QuenchWeb do
+    pipe_through :api
+
+    get "/health", HealthController, :index
+  end
+
   if Application.compile_env(:quench, :dev_routes) do
     import Phoenix.LiveDashboard.Router
 
