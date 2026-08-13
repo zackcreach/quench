@@ -8,15 +8,11 @@ Plant watering tracker with Phoenix API backend and React Native/Expo frontend.
 
 **Backend (Phoenix):**
 ```bash
-nix develop
-mix setup
-iex -S mix phx.server
+nix develop -c mix setup
+nix develop -c iex -S mix phx.server
 ```
 
-The Nix development shell provides the pinned Erlang, Elixir, Node, and PostgreSQL client tooling on Linux and Darwin. A PostgreSQL server must be running locally.
-
-Without Nix, use [`flake.nix`](flake.nix) as the source of truth for tool versions and install matching Erlang, Elixir, Node, and PostgreSQL tooling with mise, asdf, or equivalent tooling before running `mix setup`.
-
+The Nix shell starts a checkout-private PostgreSQL 18 server under `.direnv/postgresql-18`. Use `PORT=<port> nix develop -c iex -S mix phx.server` for another session. `nix develop -c dev-postgres status` and `nix develop -c dev-postgres stop` provide lifecycle control. `DATABASE_URL` or `DATABASE_SOCKET_DIR` uses an external database instead.
 **Frontend (Expo):**
 ```bash
 cd assets

@@ -11,6 +11,7 @@ quench-*.tar
 
 # Database backups
 /creachignore/
+/.direnv/
 
 # Expo/React Native (in assets/)
 assets/node_modules/
