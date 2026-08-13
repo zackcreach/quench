@@ -5,6 +5,7 @@
 /doc/
 /.fetch
 /tmp/
+/.direnv/
 erl_crash.dump
 *.ez
 quench-*.tar

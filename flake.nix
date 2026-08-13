@@ -2,10 +2,17 @@
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
     flake-utils.url = "github:numtide/flake-utils";
+    deploy-rs.url = "github:serokell/deploy-rs";
+    deploy-rs.inputs.nixpkgs.follows = "nixpkgs";
   };
 
   outputs =
-    { nixpkgs, flake-utils, ... }:
+    {
+      self,
+      nixpkgs,
+      flake-utils,
+      deploy-rs,
+    }:
     flake-utils.lib.eachDefaultSystem (
       system:
       let
@@ -56,12 +63,20 @@
                 if pg_ctl --pgdata="$data_dir" status >/dev/null 2>&1; then
                   echo "PostgreSQL is already running"
                 else
-                  pg_ctl --pgdata="$data_dir" --log="$data_dir/postgresql.log" --options="-c listen_addresses= -c unix_socket_directories='$socket_dir'" start
+                  pg_ctl --pgdata="$data_dir" --log="$data_dir/postgresql.log" \
+                    --options="-c listen_addresses= -c unix_socket_directories='$socket_dir'" start
                 fi
                 ;;
-              stop) pg_ctl --pgdata="$data_dir" stop ;;
-              status) pg_ctl --pgdata="$data_dir" status ;;
-              *) echo "Usage: dev-postgres start|stop|status" >&2; exit 2 ;;
+              stop)
+                pg_ctl --pgdata="$data_dir" stop
+                ;;
+              status)
+                pg_ctl --pgdata="$data_dir" status
+                ;;
+              *)
+                echo "Usage: dev-postgres start|stop|status" >&2
+                exit 2
+                ;;
             esac
           '';
         };
@@ -73,7 +88,13 @@
           preBuild = ''
             cp -r ${frontend}/* priv/static/
           '';
+          postInstall = ''
+            mkdir -p $out/share/prominent-tools
+            printf '%s\n' '${self.rev or self.dirtyRev or "0000000000000000000000000000000000000000"}' > $out/share/prominent-tools/revision
+          '';
         };
+
+        packages.deploy-rs = deploy-rs.packages.${system}.default;
 
         devShells.default = pkgs.mkShell {
           packages = [
@@ -82,11 +103,12 @@
             pkgs.postgresql_18
             devPostgres
           ];
+
           shellHook = ''
             if [[ -z "''${DATABASE_URL:-}" && -z "''${DATABASE_SOCKET_DIR:-}" ]]; then
               export DEV_POSTGRES_ROOT_DIR="$PWD/.direnv/postgresql-18"
               export DATABASE_SOCKET_DIR="$DEV_POSTGRES_ROOT_DIR/socket"
-              export DATABASE_USERNAME=postgres
+              export DATABASE_USERNAME="postgres"
               export PGHOST="$DATABASE_SOCKET_DIR"
               export PGUSER="$DATABASE_USERNAME"
               dev-postgres start
@@ -94,5 +116,23 @@
           '';
         };
       }
-    );
+    )
+    // {
+      deploy.nodes.symphony = {
+        hostname = "symphony";
+        sshUser = "prominent-deploy";
+        sshOpts = [
+          "-o"
+          "StrictHostKeyChecking=accept-new"
+        ];
+        remoteBuild = true;
+        profiles.quench = {
+          user = "prominent-deploy";
+          profilePath = "/nix/var/nix/profiles/per-user/prominent-deploy/quench";
+          path = deploy-rs.lib.x86_64-linux.activate.custom self.packages.x86_64-linux.default "sudo /run/current-system/sw/bin/prominent-tools-activate quench";
+        };
+      };
+
+      checks.x86_64-linux = deploy-rs.lib.x86_64-linux.deployChecks self.deploy;
+    };
 }
