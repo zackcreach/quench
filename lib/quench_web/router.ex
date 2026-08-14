@@ -6,10 +6,13 @@ defmodule QuenchWeb.Router do
 
   alias QuenchWeb.Plugs.RequireAuthenticatedApi
 
+  @unsafe_api_methods ~w(DELETE PATCH POST PUT)
+
   pipeline :api do
     plug :accepts, ["json"]
     plug :fetch_session
     plug :protect_from_forgery
+    plug :require_api_csrf
     plug :fetch_current_scope_for_user
   end
 
@@ -103,4 +106,22 @@ defmodule QuenchWeb.Router do
 
     get "/*path", PageController, :index
   end
+
+  def require_api_csrf(%{method: method} = conn, _options) when method in @unsafe_api_methods do
+    csrf_state = Plug.Conn.get_session(conn, "_csrf_token")
+    csrf_token = conn |> Plug.Conn.get_req_header("x-csrf-token") |> List.first()
+
+    case Plug.CSRFProtection.valid_state_and_csrf_token?(csrf_state, csrf_token) do
+      true ->
+        conn
+
+      false ->
+        conn
+        |> Plug.Conn.put_resp_content_type("application/json")
+        |> Plug.Conn.send_resp(:forbidden, ~s({"error":"csrf_token_invalid"}))
+        |> Plug.Conn.halt()
+    end
+  end
+
+  def require_api_csrf(conn, _options), do: conn
 end
