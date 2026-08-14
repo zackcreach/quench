@@ -78,14 +78,24 @@ defmodule Quench.Accounts do
     Repo.transact(fn ->
       with {:ok, user} <- %User{} |> User.email_changeset(attrs) |> Repo.insert(),
            {:ok, garden} <- Quench.Gardens.create_default_garden(user) do
-        if user.email == "zackcreach@gmail.com" do
-          {_, _} =
-            Repo.update_all(
-              from(plant in Quench.Plants.Plant, where: is_nil(plant.garden_id)),
-              set: [garden_id: garden.id]
-            )
-        end
+        move_unassigned_plants_to_owner_garden(user, garden)
 
+        {:ok, user}
+      else
+        {:error, changeset} -> Repo.rollback(changeset)
+      end
+    end)
+  end
+
+  def register_user_with_password(attrs) do
+    Repo.transact(fn ->
+      with {:ok, user} <-
+             %User{}
+             |> User.email_changeset(attrs)
+             |> User.password_changeset(attrs)
+             |> Repo.insert(),
+           {:ok, garden} <- Quench.Gardens.create_default_garden(user) do
+        move_unassigned_plants_to_owner_garden(user, garden)
         {:ok, user}
       else
         {:error, changeset} -> Repo.rollback(changeset)
@@ -307,4 +317,14 @@ defmodule Quench.Accounts do
       end
     end)
   end
+
+  defp move_unassigned_plants_to_owner_garden(%User{email: "zackcreach@gmail.com"}, garden) do
+    {_, _} =
+      Repo.update_all(
+        from(plant in Quench.Plants.Plant, where: is_nil(plant.garden_id)),
+        set: [garden_id: garden.id]
+      )
+  end
+
+  defp move_unassigned_plants_to_owner_garden(_user, _garden), do: :ok
 end

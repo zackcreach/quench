@@ -11,6 +11,52 @@ const getApiUrl = (): string => {
 };
 
 const API_URL = getApiUrl();
+let csrfToken = '';
+
+export interface Garden {
+  id: string;
+  name: string;
+}
+
+export interface Session {
+  authenticated: boolean;
+  csrf_token: string;
+  gardens?: Garden[];
+}
+
+const request = async (path: string, options: RequestInit = {}) => {
+  const response = await fetch(`${API_URL}${path}`, {
+    ...options,
+    credentials: 'include',
+    headers: {
+      'Content-Type': 'application/json',
+      ...(csrfToken ? { 'x-csrf-token': csrfToken } : {}),
+      ...options.headers,
+    },
+  });
+
+  if (!response.ok) throw new Error(`Request failed: ${response.status}`);
+  return response;
+};
+
+export const authApi = {
+  async session(): Promise<Session> {
+    const response = await request('/session');
+    const session = await response.json();
+    csrfToken = session.csrf_token;
+    return session;
+  },
+
+  async register(email: string, password: string, turnstileToken: string): Promise<Session> {
+    const response = await request('/register', {
+      method: 'POST',
+      body: JSON.stringify({ user: { email, password, password_confirmation: password }, turnstile_token: turnstileToken }),
+    });
+    const session = await response.json();
+    csrfToken = session.csrf_token;
+    return session;
+  },
+};
 
 interface ServerPlant {
   id: string;
@@ -52,47 +98,42 @@ const toServerPlant = (plant: Partial<Plant>): Record<string, unknown> => {
 };
 
 export const plantsApi = {
-  async list(): Promise<Plant[]> {
-    const response = await fetch(`${API_URL}/plants`);
-    if (!response.ok) throw new Error('Failed to fetch plants');
+  async list(gardenId: string): Promise<Plant[]> {
+    const response = await request(`/gardens/${gardenId}/plants`);
     const json = await response.json();
     return json.data.map(toClientPlant);
   },
 
-  async create(plant: { name: string; intervalDays: number; order: number }): Promise<Plant> {
-    const response = await fetch(`${API_URL}/plants`, {
+  async create(gardenId: string, plant: { name: string; intervalDays: number; order: number }): Promise<Plant> {
+    const response = await request(`/gardens/${gardenId}/plants`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plant: toServerPlant(plant) }),
     });
-    if (!response.ok) throw new Error('Failed to create plant');
     const json = await response.json();
     return toClientPlant(json.data);
   },
 
-  async update(id: string, updates: Partial<Plant>): Promise<Plant> {
-    const response = await fetch(`${API_URL}/plants/${id}`, {
+  async update(gardenId: string, id: string, updates: Partial<Plant>): Promise<Plant> {
+    const response = await request(`/gardens/${gardenId}/plants/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ plant: toServerPlant(updates) }),
     });
-    if (!response.ok) throw new Error('Failed to update plant');
     const json = await response.json();
     return toClientPlant(json.data);
   },
 
-  async delete(id: string): Promise<void> {
-    const response = await fetch(`${API_URL}/plants/${id}`, {
+  async delete(gardenId: string, id: string): Promise<void> {
+    await request(`/gardens/${gardenId}/plants/${id}`, {
       method: 'DELETE',
     });
-    if (!response.ok) throw new Error('Failed to delete plant');
   },
 
-  async water(id: string): Promise<Plant> {
-    const response = await fetch(`${API_URL}/plants/${id}/water`, {
+  async water(gardenId: string, id: string): Promise<Plant> {
+    const response = await request(`/gardens/${gardenId}/plants/${id}/water`, {
       method: 'POST',
     });
-    if (!response.ok) throw new Error('Failed to water plant');
     const json = await response.json();
     return toClientPlant(json.data);
   },

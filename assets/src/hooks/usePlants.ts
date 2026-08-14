@@ -6,7 +6,7 @@ import {
 } from '../utils/notifications';
 import { plantsApi } from '../services/api';
 
-export function usePlants() {
+export function usePlants(gardenId: string) {
   const [plants, setPlants] = useState<Plant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -14,7 +14,7 @@ export function usePlants() {
   const loadPlants = useCallback(async () => {
     try {
       setError(null);
-      const loadedPlants = await plantsApi.list();
+      const loadedPlants = await plantsApi.list(gardenId);
       setPlants(loadedPlants.sort((a, b) => a.order - b.order));
     } catch (loadError) {
       setError('Failed to load plants');
@@ -22,7 +22,7 @@ export function usePlants() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [gardenId]);
 
   useEffect(() => {
     loadPlants();
@@ -38,7 +38,7 @@ export function usePlants() {
     async (plantData: { name: string; intervalDays: number }) => {
       try {
         setError(null);
-        const newPlant = await plantsApi.create({
+        const newPlant = await plantsApi.create(gardenId, {
           ...plantData,
           order: plants.length,
         });
@@ -48,7 +48,7 @@ export function usePlants() {
         console.error('Failed to add plant:', createError);
       }
     },
-    [plants.length]
+    [gardenId, plants.length]
   );
 
   const updatePlant = useCallback(
@@ -58,7 +58,7 @@ export function usePlants() {
     ) => {
       try {
         setError(null);
-        const updatedPlant = await plantsApi.update(plantId, updates);
+        const updatedPlant = await plantsApi.update(gardenId, plantId, updates);
         setPlants((currentPlants) =>
           currentPlants.map((plant) =>
             plant.id === plantId ? updatedPlant : plant
@@ -69,14 +69,14 @@ export function usePlants() {
         console.error('Failed to update plant:', updateError);
       }
     },
-    []
+    [gardenId]
   );
 
   const deletePlant = useCallback(async (plantId: string) => {
     try {
       setError(null);
       await cancelPlantNotifications(plantId).catch(() => {});
-      await plantsApi.delete(plantId);
+      await plantsApi.delete(gardenId, plantId);
       setPlants((currentPlants) =>
         currentPlants.filter((plant) => plant.id !== plantId)
       );
@@ -84,12 +84,12 @@ export function usePlants() {
       setError('Failed to delete plant');
       console.error('Failed to delete plant:', deleteError);
     }
-  }, []);
+  }, [gardenId]);
 
   const waterPlant = useCallback(async (plantId: string) => {
     try {
       setError(null);
-      const updatedPlant = await plantsApi.water(plantId);
+      const updatedPlant = await plantsApi.water(gardenId, plantId);
       setPlants((currentPlants) =>
         currentPlants.map((plant) =>
           plant.id === plantId ? updatedPlant : plant
@@ -99,7 +99,7 @@ export function usePlants() {
       setError('Failed to water plant');
       console.error('Failed to water plant:', waterError);
     }
-  }, []);
+  }, [gardenId]);
 
   const reorderPlants = useCallback(async (data: { from: number; to: number }) => {
     const reordered = [...plants];
@@ -115,14 +115,14 @@ export function usePlants() {
     try {
       await Promise.all(
         updatedPlants.map((plant) =>
-          plantsApi.update(plant.id, { order: plant.order })
+          plantsApi.update(gardenId, plant.id, { order: plant.order })
         )
       );
     } catch (reorderError) {
       console.error('Failed to persist reorder:', reorderError);
       loadPlants();
     }
-  }, [plants, loadPlants]);
+  }, [gardenId, plants, loadPlants]);
 
   return {
     plants,

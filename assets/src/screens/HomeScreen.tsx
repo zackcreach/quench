@@ -8,8 +8,12 @@ import { usePlants } from '../hooks/usePlants';
 import { useNotifications } from '../hooks/useNotifications';
 import type { Plant } from '../types/plant';
 
-export function HomeScreen() {
-  const { plants, addPlant, updatePlant, deletePlant, waterPlant, reorderPlants } = usePlants();
+interface HomeScreenProps {
+  gardenId: string;
+}
+
+export function HomeScreen({ gardenId }: HomeScreenProps) {
+  const { plants, addPlant, updatePlant, deletePlant, waterPlant, reorderPlants } = usePlants(gardenId);
   useNotifications();
 
   const [dialogVisible, setDialogVisible] = useState(false);

@@ -40,6 +40,10 @@ defmodule QuenchWeb.UserAuth do
     |> redirect(to: user_return_to || signed_in_path(conn))
   end
 
+  def log_in_api_user(conn, user) do
+    create_or_extend_session(conn, user, %{})
+  end
+
   @doc """
   Logs the user out.
 

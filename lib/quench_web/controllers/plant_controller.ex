@@ -6,45 +6,60 @@ defmodule QuenchWeb.PlantController do
 
   action_fallback QuenchWeb.FallbackController
 
-  def index(conn, _params) do
-    plants = Plants.list_plants()
-    render(conn, :index, plants: plants)
+  def index(conn, %{"garden_id" => garden_id}) do
+    with {:ok, garden} <- fetch_garden(conn, garden_id) do
+      render(conn, :index, plants: Plants.list_plants(garden))
+    end
   end
 
-  def create(conn, %{"plant" => plant_params}) do
-    with {:ok, %Plant{} = plant} <- Plants.create_plant(plant_params) do
+  def create(conn, %{"garden_id" => garden_id, "plant" => plant_params}) do
+    with {:ok, garden} <- fetch_garden(conn, garden_id),
+         {:ok, %Plant{} = plant} <- Plants.create_plant(garden, plant_params) do
       conn
       |> put_status(:created)
       |> render(:show, plant: plant)
     end
   end
 
-  def show(conn, %{"id" => id}) do
-    plant = Plants.get_plant!(id)
-    render(conn, :show, plant: plant)
-  end
-
-  def update(conn, %{"id" => id, "plant" => plant_params}) do
-    plant = Plants.get_plant!(id)
-
-    with {:ok, %Plant{} = plant} <- Plants.update_plant(plant, plant_params) do
+  def show(conn, %{"garden_id" => garden_id, "id" => id}) do
+    with {:ok, garden} <- fetch_garden(conn, garden_id),
+         %Plant{} = plant <- Plants.get_plant(garden, id) do
       render(conn, :show, plant: plant)
+    else
+      nil -> QuenchWeb.FallbackController.call(conn, {:error, :not_found})
     end
   end
 
-  def delete(conn, %{"id" => id}) do
-    plant = Plants.get_plant!(id)
+  def update(conn, %{"garden_id" => garden_id, "id" => id, "plant" => plant_params}) do
+    with {:ok, garden} <- fetch_garden(conn, garden_id),
+         %Plant{} = plant <- Plants.get_plant(garden, id),
+         {:ok, %Plant{} = plant} <- Plants.update_plant(plant, plant_params) do
+      render(conn, :show, plant: plant)
+    else
+      nil -> QuenchWeb.FallbackController.call(conn, {:error, :not_found})
+    end
+  end
 
-    with {:ok, %Plant{}} <- Plants.delete_plant(plant) do
+  def delete(conn, %{"garden_id" => garden_id, "id" => id}) do
+    with {:ok, garden} <- fetch_garden(conn, garden_id),
+         %Plant{} = plant <- Plants.get_plant(garden, id),
+         {:ok, %Plant{}} <- Plants.delete_plant(plant) do
       send_resp(conn, :no_content, "")
+    else
+      nil -> QuenchWeb.FallbackController.call(conn, {:error, :not_found})
     end
   end
 
-  def water(conn, %{"id" => id}) do
-    plant = Plants.get_plant!(id)
-
-    with {:ok, %Plant{} = plant} <- Plants.water_plant(plant) do
+  def water(conn, %{"garden_id" => garden_id, "id" => id}) do
+    with {:ok, garden} <- fetch_garden(conn, garden_id),
+         %Plant{} = plant <- Plants.get_plant(garden, id),
+         {:ok, %Plant{} = plant} <- Plants.water_plant(plant) do
       render(conn, :show, plant: plant)
+    else
+      nil -> QuenchWeb.FallbackController.call(conn, {:error, :not_found})
     end
   end
+
+  defp fetch_garden(conn, garden_id),
+    do: Quench.Gardens.fetch_garden(conn.assigns.current_scope.user, garden_id)
 end

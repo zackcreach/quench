@@ -3,6 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ActivityIndicator, View } from 'react-native';
+import { useEffect, useState } from 'react';
 import {
   useFonts,
   Inter_400Regular,
@@ -12,8 +13,11 @@ import {
 } from '@expo-google-fonts/inter';
 import { theme } from './src/theme/theme';
 import { HomeScreen } from './src/screens/HomeScreen';
+import { RegistrationScreen } from './src/screens/RegistrationScreen';
+import { authApi, type Session } from './src/services/api';
 
 export default function App() {
+  const [session, setSession] = useState<Session | null>(null);
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -29,12 +33,20 @@ export default function App() {
     );
   }
 
+  useEffect(() => {
+    authApi.session().then(setSession).catch(() => setSession({ authenticated: false, csrf_token: '' }));
+  }, []);
+
+  if (!session) return null;
+
+  const garden = session.gardens?.[0];
+
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <PaperProvider theme={theme}>
           <StatusBar style="light" />
-          <HomeScreen />
+          {session.authenticated && garden ? <HomeScreen gardenId={garden.id} /> : <RegistrationScreen onRegistered={setSession} />}
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

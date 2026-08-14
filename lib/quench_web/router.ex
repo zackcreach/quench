@@ -4,8 +4,13 @@ defmodule QuenchWeb.Router do
   import QuenchWeb.UserAuth
   import Phoenix.LiveView.Router
 
+  alias QuenchWeb.Plugs.RequireAuthenticatedApi
+
   pipeline :api do
     plug :accepts, ["json"]
+    plug :fetch_session
+    plug :protect_from_forgery
+    plug :fetch_current_scope_for_user
   end
 
   pipeline :browser do
@@ -20,8 +25,21 @@ defmodule QuenchWeb.Router do
   scope "/api", QuenchWeb do
     pipe_through :api
 
-    resources "/plants", PlantController, except: [:new, :edit]
-    post "/plants/:id/water", PlantController, :water
+    get "/session", AuthController, :session
+    post "/register", AuthController, :register
+
+    scope "/gardens/:garden_id" do
+      pipe_through RequireAuthenticatedApi
+
+      resources "/plants", PlantController, except: [:new, :edit]
+      post "/plants/:id/water", PlantController, :water
+    end
+  end
+
+  scope "/auth", QuenchWeb do
+    pipe_through :browser
+
+    get "/turnstile", TurnstileController, :show
   end
 
   scope "/", QuenchWeb do
