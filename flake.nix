@@ -24,15 +24,21 @@
         );
         version = "0.1.0";
         src = ./.;
-        frontend = pkgs.buildNpmPackage {
+        frontend = pkgs.stdenv.mkDerivation {
           pname = "quench-frontend";
           inherit version;
           src = ./assets;
-          npmDepsHash = "sha256-Y5HY/+LXQPJGqq6NzaBJs/bqoxmc4XKvbaSg6qrqVcs=";
-          npmBuildScript = "web:export";
+          npmDeps = pkgs.importNpmLock { npmRoot = ./assets; };
+          nativeBuildInputs = [
+            pkgs.nodejs_24
+            pkgs.importNpmLock.npmConfigHook
+          ];
           npmFlags = [ "--ignore-scripts" ];
-          preBuild = ''
+          buildPhase = ''
+            runHook preBuild
             npm pkg set scripts.web:export="expo export --platform web --output-dir dist"
+            npm run web:export
+            runHook postBuild
           '';
           installPhase = ''
             runHook preInstall
@@ -40,11 +46,46 @@
             runHook postInstall
           '';
         };
-        mixFodDeps = beamPackages.fetchMixDeps {
-          pname = "quench-mix-deps";
-          inherit src version;
-          hash = "sha256-aJf3FANT+J7Frd1uw7BgXoLzh8wSATTU1hp88hBVElw=";
+        mixNixDeps = import ./deps.nix {
+          inherit (pkgs) lib;
+          inherit beamPackages;
+          overrides = _final: previous: {
+            lazy_html = previous.lazy_html.overrideAttrs (_old: {
+              preBuild = ''
+                export HOME="$TMPDIR"
+                export XDG_CACHE_HOME="$TMPDIR"
+              '';
+            });
+            uxid = previous.uxid.overrideAttrs (_old: {
+              postPatch = ''
+                substituteInPlace mix.exs \
+                  --replace-fail "elixirc_options: [warnings_as_errors: true]" \
+                  "elixirc_options: [warnings_as_errors: false]"
+              '';
+            });
+          };
         };
+        updateMixDeps = pkgs.writeShellApplication {
+          name = "update-mix-deps";
+          runtimeInputs = [ pkgs.mix2nix ];
+          text = ''
+            mix2nix mix.lock | sed -e '$d' > deps.nix
+          '';
+        };
+        dependencyFreshness =
+          pkgs.runCommand "quench-mix-dependencies-fresh"
+            {
+              nativeBuildInputs = [ pkgs.mix2nix ];
+            }
+            ''
+              mix2nix ${./mix.lock} | sed -e '$d' > generated-deps.nix
+              if ! cmp --silent generated-deps.nix ${./deps.nix}; then
+                echo "deps.nix is stale. Run: nix run .#update-mix-deps" >&2
+                diff --unified ${./deps.nix} generated-deps.nix >&2 || true
+                exit 1
+              fi
+              touch $out
+            '';
         devPostgres = pkgs.writeShellApplication {
           name = "dev-postgres";
           runtimeInputs = [ pkgs.postgresql_18 ];
@@ -84,22 +125,34 @@
       {
         packages.default = beamPackages.mixRelease {
           pname = "quench";
-          inherit src version mixFodDeps;
+          inherit src version mixNixDeps;
+          nativeBuildInputs = [ dependencyFreshness ];
           preBuild = ''
             cp -r ${frontend}/* priv/static/
           '';
           postInstall = ''
             mkdir -p $out/share/prominent-tools
-            printf '%s\n' '${self.rev or self.dirtyRev or "0000000000000000000000000000000000000000"}' > $out/share/prominent-tools/revision
+            printf '%s\n' '${
+              self.rev or self.dirtyRev or "0000000000000000000000000000000000000000"
+            }' > $out/share/prominent-tools/revision
           '';
         };
 
         packages.deploy-rs = deploy-rs.packages.${system}.default;
+        packages.dependency-freshness = dependencyFreshness;
+
+        apps.update-mix-deps = {
+          type = "app";
+          program = "${updateMixDeps}/bin/update-mix-deps";
+        };
+
+        checks.dependency-freshness = dependencyFreshness;
 
         devShells.default = pkgs.mkShell {
           packages = [
             beamPackages.elixir
             pkgs.nodejs_24
+            pkgs.mix2nix
             pkgs.postgresql_18
             devPostgres
           ];
@@ -137,6 +190,8 @@
         };
       };
 
-      checks.x86_64-linux = deploy-rs.lib.x86_64-linux.deployChecks self.deploy;
+      checks.x86_64-linux = deploy-rs.lib.x86_64-linux.deployChecks self.deploy // {
+        dependency-freshness = self.packages.x86_64-linux.dependency-freshness;
+      };
     };
 }
