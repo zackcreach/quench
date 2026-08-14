@@ -25,6 +25,10 @@ export default function App() {
     Inter_700Bold,
   });
 
+  useEffect(() => {
+    authApi.session().then(setSession).catch(() => setSession({ authenticated: false, csrf_token: '' }));
+  }, []);
+
   if (!fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#FAFBFB' }}>
@@ -32,10 +36,6 @@ export default function App() {
       </View>
     );
   }
-
-  useEffect(() => {
-    authApi.session().then(setSession).catch(() => setSession({ authenticated: false, csrf_token: '' }));
-  }, []);
 
   if (!session) return null;
 
