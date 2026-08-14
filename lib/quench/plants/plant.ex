@@ -8,6 +8,7 @@ defmodule Quench.Plants.Plant do
     field :watering_interval_days, :integer
     field :last_watered_at, :utc_datetime
     field :order, :integer, default: 0
+    belongs_to :garden, Quench.Gardens.Garden
 
     timestamps()
   end

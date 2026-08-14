@@ -73,6 +73,15 @@ if config_env() == :prod do
 
   config :quench, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
+  config :quench, :turnstile,
+    enabled: true,
+    site_key:
+      System.get_env("TURNSTILE_SITE_KEY") ||
+        raise("environment variable TURNSTILE_SITE_KEY is missing."),
+    secret_key:
+      System.get_env("TURNSTILE_SECRET_KEY") ||
+        raise("environment variable TURNSTILE_SECRET_KEY is missing.")
+
   config :quench, QuenchWeb.Endpoint,
     url: [host: host, port: url_port, scheme: scheme],
     check_origin: check_origin,

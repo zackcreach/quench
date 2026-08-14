@@ -1,6 +1,11 @@
 defmodule Quench.Plants do
+  import Ecto.Query
   alias Quench.Repo
   alias Quench.Plants.Plant
+
+  def list_plants(garden) do
+    Repo.all(from plant in Plant, where: plant.garden_id == ^garden.id)
+  end
 
   def list_plants do
     Repo.all(Plant)
@@ -14,10 +19,20 @@ defmodule Quench.Plants do
     Repo.get(Plant, id)
   end
 
-  def create_plant(attrs \\ %{}) do
+  def create_plant(garden, attrs) do
+    %Plant{garden_id: garden.id}
+    |> Plant.changeset(put_initial_last_watered_at(attrs))
+    |> Repo.insert()
+  end
+
+  def create_plant(attrs) do
     %Plant{}
     |> Plant.changeset(put_initial_last_watered_at(attrs))
     |> Repo.insert()
+  end
+
+  def get_plant(garden, id) do
+    Repo.one(from plant in Plant, where: plant.id == ^id and plant.garden_id == ^garden.id)
   end
 
   def update_plant(%Plant{} = plant, attrs) do

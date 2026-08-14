@@ -41,6 +41,9 @@ defmodule Quench.MixProject do
     [
       {:phoenix, "~> 1.8.3"},
       {:phoenix_ecto, "~> 4.5"},
+      {:phoenix_html, "~> 4.3"},
+      {:phoenix_live_view, "~> 1.2"},
+      {:phoenix_live_reload, "~> 1.7", only: :dev},
       {:ecto_sql, "~> 3.13"},
       {:postgrex, ">= 0.0.0"},
       {:phoenix_live_dashboard, "~> 0.8.3"},
@@ -49,6 +52,11 @@ defmodule Quench.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
+      {:bcrypt_elixir, "~> 3.3"},
+      {:req, "~> 0.5"},
+      {:swoosh, "~> 1.27"},
+      {:floki, "~> 0.38", only: :test},
+      {:lazy_html, "~> 0.1", only: :test},
       {:uxid, "~> 0.2.3"},
       {:cors_plug, "~> 3.0"}
     ]

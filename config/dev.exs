@@ -15,21 +15,13 @@ database_config =
       ]
 
     _external_database ->
-      [
-        username: "postgres",
-        password: "postgres",
-        hostname: "localhost",
-        database: "quench_dev"
-      ]
+      [username: "postgres", password: "postgres", hostname: "localhost", database: "quench_dev"]
   end
 
-# Configure your database
-config :quench, Quench.Repo,
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true,
-  pool_size: 10
-
-config :quench, Quench.Repo, database_config
+config :quench,
+       Quench.Repo,
+       database_config ++
+         [stacktrace: true, show_sensitive_data_on_connection_error: true, pool_size: 10]
 
 # For development, we disable any cache and enable
 # debugging and code reloading.
@@ -73,6 +65,11 @@ config :quench, QuenchWeb.Endpoint,
 # Enable dev routes for dashboard and mailbox
 config :quench, dev_routes: true
 
+config :quench, :turnstile,
+  enabled: true,
+  site_key: "1x00000000000000000000AA",
+  secret_key: "1x0000000000000000000000000000000AA"
+
 # Do not include metadata nor timestamps in development logs
 config :logger, :default_formatter, format: "[$level] $message\n"
 
@@ -82,3 +79,4 @@ config :phoenix, :stacktrace_depth, 20
 
 # Initialize plugs at runtime for faster development compilation
 config :phoenix, :plug_init_mode, :runtime
+config :swoosh, :api_client, false
