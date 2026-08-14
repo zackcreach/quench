@@ -46,7 +46,7 @@ export default function App() {
       <SafeAreaProvider>
         <PaperProvider theme={theme}>
           <StatusBar style="light" />
-          {session.authenticated && garden ? <HomeScreen gardenId={garden.id} /> : <RegistrationScreen onRegistered={setSession} />}
+          {session.authenticated && garden ? <HomeScreen gardenId={garden.id} onLoggedOut={() => setSession({ authenticated: false, csrf_token: '' })} /> : <RegistrationScreen onRegistered={setSession} />}
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

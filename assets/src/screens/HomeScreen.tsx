@@ -7,12 +7,14 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { usePlants } from '../hooks/usePlants';
 import { useNotifications } from '../hooks/useNotifications';
 import type { Plant } from '../types/plant';
+import { authApi } from '../services/api';
 
 interface HomeScreenProps {
   gardenId: string;
+  onLoggedOut: () => void;
 }
 
-export function HomeScreen({ gardenId }: HomeScreenProps) {
+export function HomeScreen({ gardenId, onLoggedOut }: HomeScreenProps) {
   const { plants, addPlant, updatePlant, deletePlant, waterPlant, reorderPlants } = usePlants(gardenId);
   useNotifications();
 
@@ -25,6 +27,11 @@ export function HomeScreen({ gardenId }: HomeScreenProps) {
     setEditingPlant(null);
     setDialogVisible(true);
   }, []);
+
+  const handleLogout = useCallback(async () => {
+    await authApi.logout();
+    onLoggedOut();
+  }, [onLoggedOut]);
 
   const handleOpenEditDialog = useCallback((plant: Plant) => {
     setEditingPlant(plant);
@@ -66,7 +73,7 @@ export function HomeScreen({ gardenId }: HomeScreenProps) {
 
   return (
     <View style={styles.container}>
-      <AppHeader onAddPress={handleOpenAddDialog} />
+      <AppHeader onAddPress={handleOpenAddDialog} onLogoutPress={handleLogout} />
 
       <PlantList
         plants={plants}

@@ -27,6 +27,7 @@ defmodule QuenchWeb.Router do
 
     get "/session", AuthController, :session
     post "/register", AuthController, :register
+    delete "/session", AuthController, :delete
 
     scope "/gardens/:garden_id" do
       pipe_through RequireAuthenticatedApi

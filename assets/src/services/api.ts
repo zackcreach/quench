@@ -56,6 +56,11 @@ export const authApi = {
     csrfToken = session.csrf_token;
     return session;
   },
+
+  async logout(): Promise<void> {
+    await request('/session', { method: 'DELETE' });
+    csrfToken = '';
+  },
 };
 
 interface ServerPlant {

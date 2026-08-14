@@ -4,9 +4,10 @@ import { fonts } from '../theme/theme';
 
 interface AppHeaderProps {
   onAddPress: () => void;
+  onLogoutPress: () => void;
 }
 
-export function AppHeader({ onAddPress }: AppHeaderProps) {
+export function AppHeader({ onAddPress, onLogoutPress }: AppHeaderProps) {
   return (
     <Appbar.Header style={styles.header}>
       <View style={styles.titleContainer}>
@@ -14,6 +15,7 @@ export function AppHeader({ onAddPress }: AppHeaderProps) {
         <Text style={styles.title}>Quench</Text>
       </View>
       <Appbar.Action icon="plus" iconColor="#FFFFFF" onPress={onAddPress} accessibilityLabel="Add plant" />
+      <Appbar.Action icon="logout" iconColor="#FFFFFF" onPress={onLogoutPress} accessibilityLabel="Log out" />
     </Appbar.Header>
   );
 }

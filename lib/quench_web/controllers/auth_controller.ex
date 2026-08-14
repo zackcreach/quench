@@ -45,6 +45,13 @@ defmodule QuenchWeb.AuthController do
     end
   end
 
+  def delete(conn, _params) do
+    conn
+    |> UserAuth.log_out_user()
+    |> put_status(:no_content)
+    |> send_resp(:no_content, "")
+  end
+
   defp user_json(user), do: %{id: user.id, email: user.email}
 
   defp garden_json(gardens), do: Enum.map(gardens, &%{id: &1.id, name: &1.name})
