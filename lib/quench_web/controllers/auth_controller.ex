@@ -9,7 +9,7 @@ defmodule QuenchWeb.AuthController do
   action_fallback QuenchWeb.FallbackController
 
   def session(conn, _params) do
-    case conn.assigns.current_scope.user do
+    case get_in(conn.assigns, [:current_scope, Access.key(:user)]) do
       nil ->
         json(conn, %{authenticated: false, csrf_token: get_csrf_token()})
 
