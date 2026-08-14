@@ -47,9 +47,28 @@ defmodule QuenchWeb.AuthController do
 
   def delete(conn, _params) do
     conn
-    |> UserAuth.log_out_user()
+    |> UserAuth.log_out_api_user()
     |> put_status(:no_content)
     |> send_resp(:no_content, "")
+  end
+
+  def login(conn, %{"user" => %{"email" => email, "password" => password}}) do
+    case Accounts.get_user_by_email_and_password(email, password) do
+      nil ->
+        conn
+        |> put_status(:unauthorized)
+        |> json(%{error: "invalid_credentials"})
+
+      user ->
+        conn = UserAuth.log_in_api_user(conn, user)
+
+        json(conn, %{
+          authenticated: true,
+          csrf_token: get_csrf_token(),
+          user: user_json(user),
+          gardens: garden_json(Gardens.list_gardens(user))
+        })
+    end
   end
 
   defp user_json(user), do: %{id: user.id, email: user.email}

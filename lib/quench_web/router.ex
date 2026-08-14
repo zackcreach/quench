@@ -27,6 +27,7 @@ defmodule QuenchWeb.Router do
 
     get "/session", AuthController, :session
     post "/register", AuthController, :register
+    post "/login", AuthController, :login
     delete "/session", AuthController, :delete
 
     scope "/gardens/:garden_id" do
@@ -76,11 +77,21 @@ defmodule QuenchWeb.Router do
   scope "/", QuenchWeb do
     pipe_through [:browser]
 
-    live_session :current_user,
-      on_mount: [{QuenchWeb.UserAuth, :mount_current_scope}] do
-      live "/users/register", UserLive.Registration, :new
-      live "/users/log-in", UserLive.Login, :new
-      live "/users/log-in/:token", UserLive.Confirmation, :new
+    if Mix.env() == :test do
+      live_session :current_user,
+        on_mount: [{QuenchWeb.UserAuth, :mount_current_scope}] do
+        live "/users/register", UserLive.Registration, :new
+        live "/users/log-in", UserLive.Login, :new
+        live "/users/log-in/:token", UserLive.Confirmation, :new
+      end
+    else
+      get "/users/log-in", PageController, :index
+
+      live_session :current_user,
+        on_mount: [{QuenchWeb.UserAuth, :mount_current_scope}] do
+        live "/users/register", UserLive.Registration, :new
+        live "/users/log-in/:token", UserLive.Confirmation, :new
+      end
     end
 
     post "/users/log-in", UserSessionController, :create

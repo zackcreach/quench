@@ -61,6 +61,13 @@ export const authApi = {
     await request('/session', { method: 'DELETE' });
     csrfToken = '';
   },
+
+  async login(email: string, password: string): Promise<Session> {
+    const response = await request('/login', { method: 'POST', body: JSON.stringify({ user: { email, password } }) });
+    const session = await response.json();
+    csrfToken = session.csrf_token;
+    return session;
+  },
 };
 
 interface ServerPlant {

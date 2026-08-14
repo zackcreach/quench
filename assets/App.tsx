@@ -14,10 +14,14 @@ import {
 import { theme } from './src/theme/theme';
 import { HomeScreen } from './src/screens/HomeScreen';
 import { RegistrationScreen } from './src/screens/RegistrationScreen';
+import { LoginScreen } from './src/screens/LoginScreen';
 import { authApi, type Session } from './src/services/api';
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
+  const [showLogin, setShowLogin] = useState(
+    typeof window !== 'undefined' && window.location.pathname === '/users/log-in'
+  );
   const [fontsLoaded] = useFonts({
     Inter_400Regular,
     Inter_500Medium,
@@ -46,7 +50,16 @@ export default function App() {
       <SafeAreaProvider>
         <PaperProvider theme={theme}>
           <StatusBar style="light" />
-          {session.authenticated && garden ? <HomeScreen gardenId={garden.id} onLoggedOut={() => setSession({ authenticated: false, csrf_token: '' })} /> : <RegistrationScreen onRegistered={setSession} />}
+          {session.authenticated && garden ? (
+            <HomeScreen
+              gardenId={garden.id}
+              onLoggedOut={() => setSession({ authenticated: false, csrf_token: '' })}
+            />
+          ) : showLogin ? (
+            <LoginScreen onLoggedIn={setSession} onRegisterPress={() => setShowLogin(false)} />
+          ) : (
+            <RegistrationScreen onRegistered={setSession} onLoginPress={() => setShowLogin(true)} />
+          )}
         </PaperProvider>
       </SafeAreaProvider>
     </GestureHandlerRootView>

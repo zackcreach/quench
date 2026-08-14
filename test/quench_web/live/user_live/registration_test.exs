@@ -4,6 +4,8 @@ defmodule QuenchWeb.UserLive.RegistrationTest do
   import Phoenix.LiveViewTest
   import Quench.AccountsFixtures
 
+  alias Quench.Accounts
+
   describe "Registration page" do
     test "renders registration page", %{conn: conn} do
       {:ok, _lv, html} = live(conn, ~p"/users/register")
@@ -43,12 +45,8 @@ defmodule QuenchWeb.UserLive.RegistrationTest do
       email = unique_user_email()
       form = form(lv, "#registration_form", user: valid_user_attributes(email: email))
 
-      {:ok, redirected_conn} =
-        render_submit(form)
-        |> follow_redirect(conn, ~p"/users/log-in")
-
-      assert html_response(redirected_conn, 200) =~
-               ~r/An email was sent to .*, please access it to confirm your account/
+      assert {:error, {:redirect, %{to: "/users/log-in"}}} = render_submit(form)
+      assert %Quench.Accounts.User{email: ^email} = Accounts.get_user_by_email(email)
     end
 
     test "renders errors for duplicated email", %{conn: conn} do
@@ -71,13 +69,10 @@ defmodule QuenchWeb.UserLive.RegistrationTest do
     test "redirects to login page when the Log in button is clicked", %{conn: conn} do
       {:ok, lv, _html} = live(conn, ~p"/users/register")
 
-      {:ok, _login_live, login_html} =
-        lv
-        |> element("main a", "Log in")
-        |> render_click()
-        |> follow_redirect(conn, ~p"/users/log-in")
-
-      assert login_html =~ "Log in"
+      assert {:error, {:live_redirect, %{to: "/users/log-in"}}} =
+               lv
+               |> element("main a", "Log in")
+               |> render_click()
     end
   end
 end
