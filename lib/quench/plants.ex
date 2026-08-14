@@ -7,26 +7,8 @@ defmodule Quench.Plants do
     Repo.all(from plant in Plant, where: plant.garden_id == ^garden.id)
   end
 
-  def list_plants do
-    Repo.all(Plant)
-  end
-
-  def get_plant!(id) do
-    Repo.get!(Plant, id)
-  end
-
-  def get_plant(id) do
-    Repo.get(Plant, id)
-  end
-
   def create_plant(garden, attrs) do
     %Plant{garden_id: garden.id}
-    |> Plant.changeset(put_initial_last_watered_at(attrs))
-    |> Repo.insert()
-  end
-
-  def create_plant(attrs) do
-    %Plant{}
     |> Plant.changeset(put_initial_last_watered_at(attrs))
     |> Repo.insert()
   end

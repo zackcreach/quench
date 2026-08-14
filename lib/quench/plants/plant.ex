@@ -16,7 +16,7 @@ defmodule Quench.Plants.Plant do
   def changeset(plant, attrs) do
     plant
     |> cast(attrs, [:name, :watering_interval_days, :last_watered_at, :order])
-    |> validate_required([:name, :watering_interval_days])
+    |> validate_required([:garden_id, :name, :watering_interval_days])
     |> validate_number(:watering_interval_days, greater_than: 0)
   end
 end
