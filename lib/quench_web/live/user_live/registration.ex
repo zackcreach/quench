@@ -35,7 +35,7 @@ defmodule QuenchWeb.UserLive.Registration do
           />
 
           <div phx-update="ignore" id="turnstile-container">
-            <div class="cf-turnstile" data-sitekey={@turnstile_site_key} data-size="invisible"></div>
+            <div class="cf-turnstile" data-sitekey={@turnstile_site_key}></div>
           </div>
 
           <.button phx-disable-with="Creating account..." class="btn btn-primary w-full">
@@ -80,7 +80,7 @@ defmodule QuenchWeb.UserLive.Registration do
          :info,
          "An email was sent to #{user.email}, please access it to confirm your account."
        )
-       |> push_navigate(to: ~p"/users/log-in")}
+       |> redirect(to: ~p"/users/log-in")}
     else
       {:error, :verification_failed} ->
         {:noreply, put_flash(socket, :error, "Verification failed. Please try again.")}

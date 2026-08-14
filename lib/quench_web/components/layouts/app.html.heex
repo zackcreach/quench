@@ -1,7 +1,7 @@
 <main class="min-h-screen bg-slate-50 px-4 py-16 sm:px-6">
   <div class="mx-auto max-w-lg rounded-2xl bg-white p-8 shadow-sm ring-1 ring-slate-200">
-    <div :if={@flash[:info]} class="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{@flash[:info]}</div>
-    <div :if={@flash[:error]} class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{@flash[:error]}</div>
+    <div :if={@flash["info"]} class="mb-4 rounded-lg bg-emerald-50 p-3 text-sm text-emerald-800">{@flash["info"]}</div>
+    <div :if={@flash["error"]} class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800">{@flash["error"]}</div>
     {render_slot(@inner_block)}
   </div>
 </main>

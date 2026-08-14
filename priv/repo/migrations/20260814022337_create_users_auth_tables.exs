@@ -2,7 +2,7 @@ defmodule Quench.Repo.Migrations.CreateUsersAuthTables do
   use Ecto.Migration
 
   def change do
-    create extension(:citext)
+    execute "CREATE EXTENSION IF NOT EXISTS citext", ""
 
     create table(:users, primary_key: false) do
       add :id, :text, primary_key: true

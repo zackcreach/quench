@@ -10,7 +10,7 @@ defmodule QuenchWeb.UserLive.RegistrationTest do
 
       assert html =~ "Register"
       assert html =~ "Log in"
-      assert html =~ "data-size=\"invisible\""
+      refute html =~ "data-size="
     end
 
     test "redirects if already logged in", %{conn: conn} do
@@ -43,11 +43,11 @@ defmodule QuenchWeb.UserLive.RegistrationTest do
       email = unique_user_email()
       form = form(lv, "#registration_form", user: valid_user_attributes(email: email))
 
-      {:ok, _lv, html} =
+      {:ok, redirected_conn} =
         render_submit(form)
         |> follow_redirect(conn, ~p"/users/log-in")
 
-      assert html =~
+      assert html_response(redirected_conn, 200) =~
                ~r/An email was sent to .*, please access it to confirm your account/
     end
 
