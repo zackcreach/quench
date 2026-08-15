@@ -21,6 +21,7 @@ export interface Garden {
 export interface Session {
   authenticated: boolean;
   csrf_token: string;
+  user?: { id: string; email: string };
   gardens?: Garden[];
 }
 

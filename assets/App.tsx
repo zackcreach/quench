@@ -3,7 +3,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PaperProvider } from 'react-native-paper';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { ActivityIndicator, View } from 'react-native';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   useFonts,
   Inter_400Regular,
@@ -16,9 +16,15 @@ import { HomeScreen } from './src/screens/HomeScreen';
 import { RegistrationScreen } from './src/screens/RegistrationScreen';
 import { LoginScreen } from './src/screens/LoginScreen';
 import { authApi, type Session } from './src/services/api';
+import {
+  clearSelectedGarden,
+  saveSelectedGarden,
+  selectedGarden,
+} from './src/utils/gardenSelection';
 
 export default function App() {
   const [session, setSession] = useState<Session | null>(null);
+  const [selectedGardenId, setSelectedGardenId] = useState<string | null>(null);
   const [showLogin, setShowLogin] = useState(
     typeof window !== 'undefined' && window.location.pathname === '/users/log-in'
   );
@@ -29,9 +35,28 @@ export default function App() {
     Inter_700Bold,
   });
 
-  useEffect(() => {
-    authApi.session().then(setSession).catch(() => setSession({ authenticated: false, csrf_token: '' }));
+  const updateSession = useCallback(async (nextSession: Session) => {
+    const garden = await selectedGarden(nextSession);
+    setSelectedGardenId(garden?.id ?? null);
+    setSession(nextSession);
   }, []);
+
+  const selectGarden = useCallback(async (gardenId: string) => {
+    if (!session) return;
+
+    setSelectedGardenId(gardenId);
+    await saveSelectedGarden(session, gardenId);
+  }, [session]);
+
+  const logOut = useCallback(async () => {
+    if (session) await clearSelectedGarden(session);
+    setSelectedGardenId(null);
+    setSession({ authenticated: false, csrf_token: '' });
+  }, [session]);
+
+  useEffect(() => {
+    authApi.session().then(updateSession).catch(() => setSession({ authenticated: false, csrf_token: '' }));
+  }, [updateSession]);
 
   if (!fontsLoaded) {
     return (
@@ -43,7 +68,7 @@ export default function App() {
 
   if (!session) return null;
 
-  const garden = session.gardens?.[0];
+  const garden = session.gardens?.find(({ id }) => id === selectedGardenId) ?? session.gardens?.[0];
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -53,12 +78,14 @@ export default function App() {
           {session.authenticated && garden ? (
             <HomeScreen
               gardenId={garden.id}
-              onLoggedOut={() => setSession({ authenticated: false, csrf_token: '' })}
+              gardens={session.gardens ?? []}
+              onGardenSelected={selectGarden}
+              onLoggedOut={logOut}
             />
           ) : showLogin ? (
-            <LoginScreen onLoggedIn={setSession} onRegisterPress={() => setShowLogin(false)} />
+            <LoginScreen onLoggedIn={updateSession} onRegisterPress={() => setShowLogin(false)} />
           ) : (
-            <RegistrationScreen onRegistered={setSession} onLoginPress={() => setShowLogin(true)} />
+            <RegistrationScreen onRegistered={updateSession} onLoginPress={() => setShowLogin(true)} />
           )}
         </PaperProvider>
       </SafeAreaProvider>

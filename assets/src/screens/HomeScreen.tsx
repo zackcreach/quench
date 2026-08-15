@@ -8,13 +8,16 @@ import { usePlants } from '../hooks/usePlants';
 import { useNotifications } from '../hooks/useNotifications';
 import type { Plant } from '../types/plant';
 import { authApi } from '../services/api';
+import type { Garden } from '../services/api';
 
 interface HomeScreenProps {
   gardenId: string;
+  gardens: Garden[];
+  onGardenSelected: (gardenId: string) => void;
   onLoggedOut: () => void;
 }
 
-export function HomeScreen({ gardenId, onLoggedOut }: HomeScreenProps) {
+export function HomeScreen({ gardenId, gardens, onGardenSelected, onLoggedOut }: HomeScreenProps) {
   const { plants, addPlant, updatePlant, deletePlant, waterPlant, reorderPlants } = usePlants(gardenId);
   useNotifications();
 
@@ -73,7 +76,13 @@ export function HomeScreen({ gardenId, onLoggedOut }: HomeScreenProps) {
 
   return (
     <View style={styles.container}>
-      <AppHeader onAddPress={handleOpenAddDialog} onLogoutPress={handleLogout} />
+      <AppHeader
+        gardens={gardens}
+        selectedGardenId={gardenId}
+        onAddPress={handleOpenAddDialog}
+        onGardenSelected={onGardenSelected}
+        onLogoutPress={handleLogout}
+      />
 
       <PlantList
         plants={plants}
