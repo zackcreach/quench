@@ -1,0 +1,11 @@
+{
+  "findings": {
+    "Hex:bandit:CVE-2026-74836": 8.7,
+    "Hex:bandit:CVE-2026-75484": 6.9,
+    "Hex:decimal:CVE-2026-32686": 6.9,
+    "Hex:postgrex:CVE-2026-32687": 7.5,
+    "Hex:postgrex:CVE-2026-58225": 2.1,
+    "Hex:postgrex:CVE-2026-66838": 5.9
+  },
+  "version": 1
+}

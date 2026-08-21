@@ -6,7 +6,7 @@ defmodule QuenchWeb.UserLive.LoginTest do
 
   describe "login page" do
     test "renders login page", %{conn: conn} do
-      {:ok, _lv, html} = live(conn, ~p"/users/log-in")
+      {:ok, _live_view, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "Log in"
       assert html =~ "Sign up"
@@ -96,14 +96,16 @@ defmodule QuenchWeb.UserLive.LoginTest do
     end
 
     test "shows login page with email filled in", %{conn: conn, user: user} do
-      {:ok, _lv, html} = live(conn, ~p"/users/log-in")
+      {:ok, live_view, html} = live(conn, ~p"/users/log-in")
 
       assert html =~ "You need to reauthenticate"
       refute html =~ "Register"
       assert html =~ "Log in with email"
 
-      assert html =~
-               ~s(<input type="email" name="user[email]" id="login_form_magic_email" value="#{user.email}")
+      assert has_element?(
+               live_view,
+               "#login_form_magic_email[value=\"#{user.email}\"]"
+             )
     end
   end
 end
