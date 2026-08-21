@@ -18,7 +18,7 @@ defmodule QuenchWeb.CoreComponents do
     <div>
       <label :if={@label} for={@field.id} class="mb-1 block text-sm font-medium text-slate-700">{@label}</label>
       <input id={@field.id} name={@name} value={@value} type={@type} autocomplete={@autocomplete} readonly={@readonly} required={@required} phx-mounted={@phx_mounted} class="block w-full rounded-lg border border-slate-300 px-3 py-2 shadow-sm outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100" {@rest} />
-      <p :for={{message, _opts} <- @field.errors} class="mt-1 text-sm text-red-600">{translate_error(message)}</p>
+      <p :for={error <- @field.errors} class="mt-1 text-sm text-red-600">{translate_error(error)}</p>
     </div>
     """
   end
@@ -56,6 +56,16 @@ defmodule QuenchWeb.CoreComponents do
     """
   end
 
-  defp translate_error({message, _opts}), do: message
+  defp translate_error({message, options}) do
+    Enum.reduce(options, message, fn {key, value}, translated ->
+      placeholder = "%{#{key}}"
+
+      case String.contains?(translated, placeholder) do
+        true -> String.replace(translated, placeholder, to_string(value))
+        false -> translated
+      end
+    end)
+  end
+
   defp translate_error(message), do: message
 end
