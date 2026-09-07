@@ -270,12 +270,12 @@ let
 
     mint = buildMix rec {
       name = "mint";
-      version = "1.9.3";
+      version = "1.10.0";
 
       src = fetchHex {
         pkg = "mint";
         version = "${version}";
-        sha256 = "5f7c9342480c069dbbc4eeac3490303c9e01870ff01a7f1d29b6107054fc1e74";
+        sha256 = "8b16fb72aaa7531d206a1f05e4cc85509ba531ccec7a17a22736c9c95cbb24d1";
       };
 
       beamDeps = [ hpax ];
@@ -374,12 +374,12 @@ let
 
     phoenix_live_view = buildMix rec {
       name = "phoenix_live_view";
-      version = "1.2.10";
+      version = "1.2.11";
 
       src = fetchHex {
         pkg = "phoenix_live_view";
         version = "${version}";
-        sha256 = "bcf9d64846b770bc64b1a58dc40af406d80eb61b6e516f7aea4cc8cc15e0a1d9";
+        sha256 = "c4087267cbd4dc4ed7ac36512a97830af8e9c857ca7cb22557f8640fc5f9d306";
       };
 
       beamDeps = [ jason lazy_html phoenix phoenix_html phoenix_template plug telemetry ];
@@ -452,12 +452,12 @@ let
 
     req = buildMix rec {
       name = "req";
-      version = "0.7.3";
+      version = "0.7.4";
 
       src = fetchHex {
         pkg = "req";
         version = "${version}";
-        sha256 = "73b303030dccc2b6d023ee5ada380825ab3a7cd3863aead493db09ec420ffdf2";
+        sha256 = "4b192d63253e8dcc6221ef992ea9ebef7d3555166e8423aa5b553e86bc3c69a2";
       };
 
       beamDeps = [ finch jason mime plug ];
