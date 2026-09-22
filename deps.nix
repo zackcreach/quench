@@ -270,12 +270,12 @@ let
 
     mint = buildMix rec {
       name = "mint";
-      version = "1.10.0";
+      version = "1.10.1";
 
       src = fetchHex {
         pkg = "mint";
         version = "${version}";
-        sha256 = "8b16fb72aaa7531d206a1f05e4cc85509ba531ccec7a17a22736c9c95cbb24d1";
+        sha256 = "0ba2a904605ed8406393444fb8b3356dc58eb59ee6c7fb94ac3f015e1be129e8";
       };
 
       beamDeps = [ hpax ];
@@ -309,12 +309,12 @@ let
 
     phoenix = buildMix rec {
       name = "phoenix";
-      version = "1.8.13";
+      version = "1.8.14";
 
       src = fetchHex {
         pkg = "phoenix";
         version = "${version}";
-        sha256 = "ad14e24d10e5a52d5f80429053bbe3a5d124311a2868fceb0a01a2e859c44539";
+        sha256 = "2782ff375824b2b5e41561fbae4764ee7b875af6898483bca49f24a9d1e37816";
       };
 
       beamDeps = [ bandit jason phoenix_pubsub phoenix_template plug plug_crypto telemetry websock_adapter ];
@@ -374,12 +374,12 @@ let
 
     phoenix_live_view = buildMix rec {
       name = "phoenix_live_view";
-      version = "1.2.11";
+      version = "1.2.12";
 
       src = fetchHex {
         pkg = "phoenix_live_view";
         version = "${version}";
-        sha256 = "c4087267cbd4dc4ed7ac36512a97830af8e9c857ca7cb22557f8640fc5f9d306";
+        sha256 = "656810d716e3369545dd63981196a5d68b77fdb253afe02ef0c6fa14cfd8dc2b";
       };
 
       beamDeps = [ jason lazy_html phoenix phoenix_html phoenix_template plug telemetry ];
@@ -400,12 +400,12 @@ let
 
     phoenix_template = buildMix rec {
       name = "phoenix_template";
-      version = "1.0.4";
+      version = "1.1.0";
 
       src = fetchHex {
         pkg = "phoenix_template";
         version = "${version}";
-        sha256 = "2c0c81f0e5c6753faf5cca2f229c9709919aba34fab866d3bc05060c9c444206";
+        sha256 = "eba70070de79b2c3501ef205a74a69f98ab352f3785aa15da9ed161f9fe0fd5d";
       };
 
       beamDeps = [ phoenix_html ];
@@ -465,12 +465,12 @@ let
 
     swoosh = buildMix rec {
       name = "swoosh";
-      version = "1.28.0";
+      version = "1.28.1";
 
       src = fetchHex {
         pkg = "swoosh";
         version = "${version}";
-        sha256 = "bb5c0b7c988beb53786254a61580597fe1017a652039061ee2b4c28b5097b10e";
+        sha256 = "d84e08c445f70617afd3a31633db2ea02ceabdfec482bde4b824da63b8150bdc";
       };
 
       beamDeps = [ bandit finch idna jason mime plug req telemetry ];
