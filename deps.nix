@@ -10,12 +10,12 @@ let
   packages = with beamPackages; with self; {
     bandit = buildMix rec {
       name = "bandit";
-      version = "1.14.0";
+      version = "1.14.1";
 
       src = fetchHex {
         pkg = "bandit";
         version = "${version}";
-        sha256 = "2d07630e4bf77b55240881386f7629bcc2f87426a299860b2d31c4ad77a48746";
+        sha256 = "87c7ee5e08fb5f22d4e072e681e1101266a21432889b08ef8d0cb0c1450f8bba";
       };
 
       beamDeps = [ hpax plug telemetry thousand_island websock ];
@@ -335,12 +335,12 @@ let
 
     phoenix_html = buildMix rec {
       name = "phoenix_html";
-      version = "4.3.0";
+      version = "4.4.0";
 
       src = fetchHex {
         pkg = "phoenix_html";
         version = "${version}";
-        sha256 = "3eaa290a78bab0f075f791a46a981bbe769d94bc776869f4f3063a14f30497ad";
+        sha256 = "94832038da7ab8f86d4c0d36f7797a269fd06fe611f25c69f55108c075505228";
       };
 
       beamDeps = [];
