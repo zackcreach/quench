@@ -17,7 +17,7 @@
       system:
       let
         pkgs = import nixpkgs { inherit system; };
-        beamPackages = pkgs.beamMinimal27Packages.extend (
+        beamPackages = pkgs.beamMinimal27Packages.overrideScope (
           _final: previous: {
             elixir = previous.elixir_1_19;
           }
